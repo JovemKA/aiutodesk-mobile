@@ -26,7 +26,7 @@ export default function ArticleScreen() {
   };
 
   return (
-    <ScreenLayout title="Artigo" showNav={false}>
+    <ScreenLayout title="Artigo">
       <Pressable style={styles.back} onPress={() => router.back()}>
         <IconSymbol name="chevron.right" color={theme.colors.primary} size={18} style={styles.backIcon} />
         <Text style={styles.backText}>Voltar</Text>

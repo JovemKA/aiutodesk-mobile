@@ -28,6 +28,7 @@ const MAPPING = {
   'book.fill': { lib: 'material', name: 'menu-book' },
   'ticket.fill': { lib: 'material', name: 'confirmation-number' },
   'magnifyingglass': { lib: 'material', name: 'search' },
+  'line.3.horizontal': { lib: 'material', name: 'menu' },
   'arrow.right.square': { lib: 'material', name: 'logout' },
   'hand.thumbsup': { lib: 'material', name: 'thumb-up' },
   'hand.thumbsdown': { lib: 'material', name: 'thumb-down' },

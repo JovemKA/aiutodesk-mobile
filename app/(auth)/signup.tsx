@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppButton } from '@/components/ui/AppButton';
+import { Logo } from '@/components/ui/Logo';
 import { TextField } from '@/components/ui/TextField';
 import { useAuth } from '@/features/auth/useAuth';
 import { useThemeMode } from '@/hooks/useThemeMode';
@@ -55,6 +56,7 @@ export default function SignupScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.brand}>
+            <Logo size={48} />
             <Text style={styles.logo}>Criar conta</Text>
             <Text style={styles.tagline}>Comece a usar o AiutoDesk</Text>
           </View>

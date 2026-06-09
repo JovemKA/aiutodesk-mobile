@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AppButton } from '@/components/ui/AppButton';
+import { Logo } from '@/components/ui/Logo';
 import { TextField } from '@/components/ui/TextField';
 import { useAuth } from '@/features/auth/useAuth';
 import { useThemeMode } from '@/hooks/useThemeMode';
@@ -50,7 +51,7 @@ export default function LoginScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.brand}>
-            <Text style={styles.logo}>AiutoDesk</Text>
+            <Logo size={56} />
             <Text style={styles.tagline}>Suporte inteligente no seu bolso</Text>
           </View>
 
@@ -98,12 +99,7 @@ const createStyles = (theme: Theme) =>
       padding: theme.spacing.xl,
       gap: theme.spacing.xl,
     },
-    brand: { alignItems: 'center', gap: theme.spacing.xs },
-    logo: {
-      fontFamily: theme.typography.fontFamily.heading,
-      fontSize: theme.typography.fontSize.xxl,
-      color: theme.colors.primary,
-    },
+    brand: { alignItems: 'center', gap: theme.spacing.md },
     tagline: {
       fontFamily: theme.typography.fontFamily.body,
       fontSize: theme.typography.fontSize.sm,

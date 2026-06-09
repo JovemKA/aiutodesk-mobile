@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { ScreenLayout } from '@/components/ScreenLayout';
 import { AppButton } from '@/components/ui/AppButton';
+import { Avatar } from '@/components/ui/Avatar';
 import { useAuth } from '@/features/auth/useAuth';
 import { useThemeMode } from '@/hooks/useThemeMode';
 import type { UserRole } from '@/services/api/types';
@@ -20,18 +21,10 @@ export default function ProfileScreen() {
   const styles = useMemo(() => createStyles(theme), [theme]);
   const { user, logout } = useAuth();
 
-  const initials = (user?.name ?? '?')
-    .split(' ')
-    .slice(0, 2)
-    .map((p) => p.charAt(0).toUpperCase())
-    .join('');
-
   return (
     <ScreenLayout title="Perfil">
       <View style={styles.card}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{initials}</Text>
-        </View>
+        <Avatar name={user?.name ?? '?'} size={80} />
         <Text style={styles.name}>{user?.name ?? '—'}</Text>
         <Text style={styles.email}>{user?.email}</Text>
         {user ? (
@@ -56,19 +49,6 @@ const createStyles = (theme: Theme) =>
       padding: theme.spacing.xl,
       alignItems: 'center',
       gap: theme.spacing.sm,
-    },
-    avatar: {
-      width: 80,
-      height: 80,
-      borderRadius: 40,
-      backgroundColor: theme.colors.primary,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    avatarText: {
-      fontFamily: theme.typography.fontFamily.heading,
-      fontSize: theme.typography.fontSize.xl,
-      color: theme.colors.onPrimary,
     },
     name: {
       fontFamily: theme.typography.fontFamily.heading,

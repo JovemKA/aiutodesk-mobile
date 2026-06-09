@@ -1,6 +1,6 @@
 import { Link } from 'expo-router';
 import React, { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { ScreenLayout } from '@/components/ScreenLayout';
 import { IconSymbol, type IconSymbolName } from '@/components/ui/icon-symbol';
@@ -42,7 +42,10 @@ const AGENT_SHORTCUT: Shortcut = {
 
 export default function HomeScreen() {
   const { theme } = useThemeMode();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const { width } = useWindowDimensions();
+  // Duas colunas: largura total - padding lateral do conteúdo (lg*2) - gap entre cards (lg).
+  const cardWidth = (width - theme.spacing.lg * 2 - theme.spacing.lg) / 2;
+  const styles = useMemo(() => createStyles(theme, cardWidth), [theme, cardWidth]);
   const { user } = useAuth();
 
   const isAgent = user?.role === 'dev' || user?.role === 'master' || user?.role === 'admin';
@@ -51,46 +54,68 @@ export default function HomeScreen() {
 
   return (
     <ScreenLayout title={`Olá, ${firstName}`} subtitle={user ? ROLE_LABEL[user.role] : undefined}>
-      {shortcuts.map((s) => (
-        <Link key={s.href} href={s.href as never} asChild>
-          <Pressable style={({ pressed }) => [styles.card, pressed ? styles.cardPressed : null]}>
-            <View style={styles.iconWrap}>
-              <IconSymbol name={s.icon} color={theme.colors.primary} size={26} />
-            </View>
-            <View style={styles.cardText}>
+      <Text style={styles.sectionLabel}>Atalhos</Text>
+      <View style={styles.grid}>
+        {shortcuts.map((s) => (
+          <Link key={s.href} href={s.href as never} asChild>
+            <Pressable style={({ pressed }) => [styles.card, pressed ? styles.cardPressed : null]}>
+              <View style={styles.iconWrap}>
+                <IconSymbol name={s.icon} color={theme.colors.primary} size={24} />
+              </View>
               <Text style={styles.cardTitle}>{s.title}</Text>
               <Text style={styles.cardDescription}>{s.description}</Text>
-            </View>
-            <IconSymbol name="chevron.right" color={theme.colors.mutedText} size={20} />
-          </Pressable>
-        </Link>
-      ))}
+            </Pressable>
+          </Link>
+        ))}
+      </View>
     </ScreenLayout>
   );
 }
 
-const createStyles = (theme: Theme) =>
+const createStyles = (theme: Theme, cardWidth: number) =>
   StyleSheet.create({
-    card: {
+    sectionLabel: {
+      fontFamily: theme.typography.fontFamily.subtitle,
+      fontSize: theme.typography.fontSize.xs,
+      color: theme.colors.subtleText,
+      textTransform: 'uppercase',
+      letterSpacing: 1,
+      marginTop: theme.spacing.sm,
+      marginBottom: theme.spacing.sm,
+    },
+    grid: {
       flexDirection: 'row',
-      alignItems: 'center',
-      gap: theme.spacing.md,
+      flexWrap: 'wrap',
+      gap: theme.spacing.lg,
+    },
+    card: {
+      width: cardWidth,
+      minHeight: 140,
+      gap: theme.spacing.sm,
       backgroundColor: theme.colors.surface,
       borderColor: theme.colors.border,
       borderWidth: 1,
-      borderRadius: theme.spacing.md,
+      borderRadius: 16,
       padding: theme.spacing.lg,
+      shadowColor: '#000',
+      shadowOpacity: 0.04,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 1,
     },
-    cardPressed: { opacity: 0.85 },
+    cardPressed: {
+      opacity: 0.9,
+      transform: [{ scale: 0.98 }],
+    },
     iconWrap: {
-      width: 46,
-      height: 46,
-      borderRadius: 23,
-      backgroundColor: theme.colors.chip,
+      width: 44,
+      height: 44,
+      borderRadius: 14,
+      backgroundColor: theme.colors.primarySoft,
       alignItems: 'center',
       justifyContent: 'center',
+      marginBottom: theme.spacing.xs,
     },
-    cardText: { flex: 1, gap: 2 },
     cardTitle: {
       fontFamily: theme.typography.fontFamily.subtitle,
       fontSize: theme.typography.fontSize.md,
@@ -98,7 +123,8 @@ const createStyles = (theme: Theme) =>
     },
     cardDescription: {
       fontFamily: theme.typography.fontFamily.body,
-      fontSize: theme.typography.fontSize.sm,
+      fontSize: theme.typography.fontSize.xs,
       color: theme.colors.mutedText,
+      lineHeight: theme.typography.lineHeight.sm,
     },
   });

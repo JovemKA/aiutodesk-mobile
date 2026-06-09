@@ -1,10 +1,14 @@
+import { useRouter } from 'expo-router';
 import React, { useMemo } from 'react';
-import { Box, HStack, ScrollView, Text, VStack } from '@gluestack-ui/themed';
-import { StyleSheet } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { SectionNav } from '@/components/SectionNav';
+import { Avatar } from '@/components/ui/Avatar';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Logo } from '@/components/ui/Logo';
+import { useAuth } from '@/features/auth/useAuth';
 import { ThemeToggle } from '@/features/theme/ThemeToggle';
+import { useDrawer } from '@/hooks/useDrawer';
 import { useThemeMode } from '@/hooks/useThemeMode';
 import { Theme } from '@/theme';
 
@@ -14,51 +18,55 @@ type ScreenLayoutProps = {
   subtitle?: string;
   // When false, children fill the available area without a ScrollView (e.g. chat).
   scroll?: boolean;
-  // When false, hides the bottom navigation (e.g. detail screens).
-  showNav?: boolean;
 };
 
-export function ScreenLayout({
-  children,
-  title = 'AiutoDesk',
-  subtitle,
-  scroll = true,
-  showNav = true,
-}: ScreenLayoutProps) {
+export function ScreenLayout({ children, title = 'AiutoDesk', subtitle, scroll = true }: ScreenLayoutProps) {
   const { theme } = useThemeMode();
   const insets = useSafeAreaInsets();
+  const { open } = useDrawer();
+  const { user } = useAuth();
+  const router = useRouter();
   const styles = useMemo(() => createStyles(theme), [theme]);
-  const footerHeight = showNav ? 88 + insets.bottom : 0;
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Box style={styles.screen}>
-        <Box style={styles.orbPrimary} pointerEvents="none" />
-        <Box style={styles.orbAccent} pointerEvents="none" />
-        <HStack style={styles.header}>
-          <VStack style={styles.headerText}>
-            <Text style={styles.title}>{title}</Text>
-            {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
-          </VStack>
-          <ThemeToggle />
-        </HStack>
+      <View style={styles.screen}>
+        <View style={styles.orbPrimary} pointerEvents="none" />
+        <View style={styles.orbAccent} pointerEvents="none" />
+
+        <View style={styles.chrome}>
+          <View style={styles.chromeSide}>
+            <Pressable accessibilityLabel="Abrir menu" onPress={open} hitSlop={8} style={styles.iconButton}>
+              <IconSymbol name="line.3.horizontal" size={24} color={theme.colors.text} />
+            </Pressable>
+            <Logo size={24} textColor={theme.colors.text} />
+          </View>
+          <View style={styles.chromeSide}>
+            <ThemeToggle />
+            <Pressable
+              accessibilityLabel="Abrir perfil"
+              onPress={() => router.push('/(app)/profile')}
+              hitSlop={8}>
+              <Avatar name={user?.name ?? '?'} size={32} />
+            </Pressable>
+          </View>
+        </View>
+
+        <View style={styles.titleBlock}>
+          <Text style={styles.title}>{title}</Text>
+          {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        </View>
 
         {scroll ? (
           <ScrollView
-            contentContainerStyle={[styles.content, { paddingBottom: footerHeight + theme.spacing.lg }]}
+            contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + theme.spacing.lg }]}
             showsVerticalScrollIndicator={false}>
-            <VStack style={styles.stack}>{children}</VStack>
+            <View style={styles.stack}>{children}</View>
           </ScrollView>
         ) : (
-          <Box style={[styles.fill, { paddingBottom: footerHeight }]}>{children}</Box>
+          <View style={styles.fill}>{children}</View>
         )}
-
-        {showNav ? (
-          <Box style={[styles.footer, { paddingBottom: insets.bottom > 0 ? insets.bottom : theme.spacing.md }]}>
-            <SectionNav />
-          </Box>
-        ) : null}
-      </Box>
+      </View>
     </SafeAreaView>
   );
 }
@@ -73,16 +81,28 @@ const createStyles = (theme: Theme) =>
       flex: 1,
       backgroundColor: theme.colors.background,
     },
-    header: {
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.md,
-      paddingBottom: theme.spacing.sm,
+    // Recuo horizontal único da página — usado por chrome, título e conteúdo.
+    chrome: {
+      flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      gap: theme.spacing.md,
+      paddingHorizontal: theme.spacing.lg,
+      paddingTop: theme.spacing.sm,
+      paddingBottom: theme.spacing.xs,
     },
-    headerText: {
-      flex: 1,
+    chromeSide: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+    },
+    iconButton: {
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    titleBlock: {
+      paddingHorizontal: theme.spacing.lg,
+      paddingTop: theme.spacing.xs,
+      paddingBottom: theme.spacing.md,
     },
     title: {
       fontFamily: theme.typography.fontFamily.heading,
@@ -95,7 +115,8 @@ const createStyles = (theme: Theme) =>
       color: theme.colors.mutedText,
     },
     content: {
-      padding: theme.spacing.lg,
+      paddingHorizontal: theme.spacing.lg,
+      paddingTop: theme.spacing.xs,
       flexGrow: 1,
     },
     fill: {
@@ -103,23 +124,6 @@ const createStyles = (theme: Theme) =>
     },
     stack: {
       gap: theme.spacing.lg,
-    },
-    footer: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      bottom: 0,
-      zIndex: 20,
-      backgroundColor: theme.colors.background,
-      borderColor: theme.colors.border,
-      borderTopWidth: 1,
-      shadowColor: '#000',
-      shadowOpacity: 0.04,
-      shadowRadius: 8,
-      shadowOffset: { width: 0, height: -2 },
-      elevation: 6,
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.xs,
     },
     orbPrimary: {
       position: 'absolute',

@@ -1,6 +1,12 @@
 import { Stack } from 'expo-router';
 import React from 'react';
 
+import { DrawerProvider } from '@/features/navigation/DrawerProvider';
+
 export default function AppLayout() {
-  return <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />;
+  return (
+    <DrawerProvider>
+      <Stack screenOptions={{ headerShown: false, animation: 'fade' }} />
+    </DrawerProvider>
+  );
 }
