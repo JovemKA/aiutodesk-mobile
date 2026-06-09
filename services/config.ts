@@ -1,0 +1,5 @@
+// Centralized runtime configuration sourced from Expo public env vars.
+
+const DEFAULT_API_URL = 'http://localhost:3000';
+
+export const API_URL = (process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_API_URL).replace(/\/$/, '');
