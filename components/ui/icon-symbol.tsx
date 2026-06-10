@@ -44,6 +44,16 @@ const MAPPING = {
   'paperclip': { lib: 'material', name: 'attach-file' },
   'checkmark': { lib: 'material', name: 'check' },
   'xmark': { lib: 'material', name: 'close' },
+  'bot': { lib: 'material', name: 'smart-toy' },
+  'lock.reset': { lib: 'material', name: 'lock-reset' },
+  'plus.circle.fill': { lib: 'material', name: 'add-circle' },
+  'key.fill': { lib: 'material', name: 'vpn-key' },
+  'info.circle': { lib: 'material', name: 'info' },
+  'clock.arrow.circlepath': { lib: 'material', name: 'history' },
+  'ellipsis': { lib: 'material', name: 'more-vert' },
+  'archivebox': { lib: 'material', name: 'archive' },
+  'pencil': { lib: 'material', name: 'edit' },
+  'trash': { lib: 'material', name: 'delete' },
 } satisfies Record<string, IconSpec>;
 
 export type IconSymbolName = keyof typeof MAPPING;

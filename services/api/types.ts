@@ -58,11 +58,10 @@ export type ChatConversation = {
   updatedAt: string;
 };
 
-export type ChatMessage = {
-  id: string;
-  conversationId: string;
+// Shape returned by GET /chat/conversations/:id/messages.
+export type ConversationHistoryMessage = {
   role: 'user' | 'assistant';
-  content: string;
+  text: string;
   createdAt: string;
 };
 

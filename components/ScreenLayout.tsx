@@ -39,7 +39,9 @@ export function ScreenLayout({ children, title = 'AiutoDesk', subtitle, scroll =
             <Pressable accessibilityLabel="Abrir menu" onPress={open} hitSlop={8} style={styles.iconButton}>
               <IconSymbol name="line.3.horizontal" size={24} color={theme.colors.text} />
             </Pressable>
-            <Logo size={24} textColor={theme.colors.text} />
+            <View style={styles.headerLogo}>
+              <Logo size={24} textColor={theme.colors.text} />
+            </View>
           </View>
           <View style={styles.chromeSide}>
             <ThemeToggle />
@@ -95,6 +97,9 @@ const createStyles = (theme: Theme) =>
       alignItems: 'center',
       gap: theme.spacing.sm,
     },
+    headerLogo: {
+      marginLeft: theme.spacing.md,
+    },
     iconButton: {
       alignItems: 'center',
       justifyContent: 'center',
@@ -140,7 +145,7 @@ const createStyles = (theme: Theme) =>
       width: 160,
       height: 160,
       borderRadius: 80,
-      backgroundColor: theme.colors.accent,
+      backgroundColor: theme.colors.primaryDark,
       opacity: 0.08,
       bottom: 40,
       left: -40,
