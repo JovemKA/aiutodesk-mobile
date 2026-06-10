@@ -14,6 +14,7 @@ import {
 import { ScreenLayout } from '@/components/ScreenLayout';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Markdown } from '@/components/ui/Markdown';
+import { useAuth } from '@/features/auth/useAuth';
 import { useChat, type UIChatMessage } from '@/hooks/queries/useChat';
 import { useThemeMode } from '@/hooks/useThemeMode';
 import { Theme } from '@/theme';
@@ -86,7 +87,9 @@ function MessageBubble({ message }: { message: UIChatMessage }) {
   const { theme } = useThemeMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const router = useRouter();
+  const { user } = useAuth();
   const isUser = message.role === 'user';
+  const isAgent = user?.role === 'dev' || user?.role === 'master' || user?.role === 'admin';
 
   return (
     <View style={[styles.bubbleWrap, isUser ? styles.bubbleWrapUser : styles.bubbleWrapAssistant]}>
@@ -99,10 +102,19 @@ function MessageBubble({ message }: { message: UIChatMessage }) {
       </View>
 
       {message.escalatedTicketId ? (
-        <View style={styles.escalation}>
-          <IconSymbol name="exclamationmark.bubble" color={theme.colors.info} size={16} />
-          <Text style={styles.escalationText}>Chamado aberto para o suporte.</Text>
-        </View>
+        isAgent ? (
+          <Pressable
+            style={styles.escalation}
+            onPress={() => router.push(`/(app)/tickets/${message.escalatedTicketId}` as never)}>
+            <IconSymbol name="exclamationmark.bubble" color={theme.colors.info} size={16} />
+            <Text style={styles.escalationLink}>Chamado aberto — abrir detalhe</Text>
+          </Pressable>
+        ) : (
+          <View style={styles.escalation}>
+            <IconSymbol name="exclamationmark.bubble" color={theme.colors.info} size={16} />
+            <Text style={styles.escalationText}>Chamado aberto para o suporte.</Text>
+          </View>
+        )
       ) : null}
 
       {message.sources && message.sources.length > 0 ? (
@@ -174,6 +186,12 @@ const createStyles = (theme: Theme) =>
       fontFamily: theme.typography.fontFamily.body,
       fontSize: theme.typography.fontSize.xs,
       color: theme.colors.info,
+    },
+    escalationLink: {
+      fontFamily: theme.typography.fontFamily.subtitle,
+      fontSize: theme.typography.fontSize.xs,
+      color: theme.colors.info,
+      textDecorationLine: 'underline',
     },
     sources: {
       marginTop: theme.spacing.xs,

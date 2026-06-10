@@ -82,3 +82,104 @@ export type Article = {
   createdAt: string;
   updatedAt: string;
 };
+
+// --- Tickets ------------------------------------------------------------
+
+export type TicketStatus = 'open' | 'in_progress' | 'waiting_user' | 'resolved' | 'closed';
+export type TicketPriority = 'low' | 'medium' | 'high' | 'critical';
+export type TicketEventType = 'STATUS_CHANGE' | 'PRIORITY_CHANGE' | 'ASSIGNED' | 'NOTE' | 'REPLY';
+
+export type Department = {
+  id: string;
+  name: string;
+  costCenter?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type Category = {
+  id: string;
+  name: string;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+// User as populated inside ticket relations (mirrors backend safeUser).
+export type TicketUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+};
+
+export type Ticket = {
+  id: string;
+  title: string;
+  description: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  priorityScore: number | null;
+  priorityReason: string | null;
+  scoreConfidence: string | null;
+  requester: TicketUser;
+  assignedUser: TicketUser | null;
+  department: Department | null;
+  category: Category | null;
+  resolvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TicketAttachment = { name: string; size: number; url: string };
+
+export type TicketMessage = {
+  id: string;
+  ticketId: string;
+  authorId: string | null;
+  authorRole: 'requester' | 'agent' | 'system';
+  body: string;
+  createdAt: string;
+  internalNote: boolean;
+  attachments?: TicketAttachment[];
+};
+
+export type TicketEvent = {
+  id: string;
+  type: TicketEventType;
+  actor: TicketUser | null;
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
+};
+
+export type AssignableUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+};
+
+export type AssistResult = {
+  suggestion: string;
+  referencedTickets: { ticketId: string; title: string }[];
+};
+
+// Input DTOs
+export type TicketFilters = {
+  status?: TicketStatus;
+  priority?: TicketPriority;
+  assignedTo?: string;
+  departmentId?: string;
+};
+
+export type CreateTicketPayload = {
+  title: string;
+  description: string;
+  priority?: TicketPriority;
+  category_id?: string;
+  department_id?: string;
+};
+
+export type ReplyTicketPayload = {
+  body: string;
+  internalNote?: boolean;
+};

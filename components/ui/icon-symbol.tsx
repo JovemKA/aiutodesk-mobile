@@ -34,6 +34,16 @@ const MAPPING = {
   'hand.thumbsdown': { lib: 'material', name: 'thumb-down' },
   'sparkles': { lib: 'material', name: 'auto-awesome' },
   'exclamationmark.bubble': { lib: 'material', name: 'support-agent' },
+  'lock.fill': { lib: 'material', name: 'lock' },
+  'globe': { lib: 'material', name: 'public' },
+  'plus': { lib: 'material', name: 'add' },
+  'person.badge': { lib: 'material', name: 'person-add' },
+  'slider.horizontal': { lib: 'material', name: 'tune' },
+  'flag.fill': { lib: 'material', name: 'flag' },
+  'clock.fill': { lib: 'material', name: 'schedule' },
+  'paperclip': { lib: 'material', name: 'attach-file' },
+  'checkmark': { lib: 'material', name: 'check' },
+  'xmark': { lib: 'material', name: 'close' },
 } satisfies Record<string, IconSpec>;
 
 export type IconSymbolName = keyof typeof MAPPING;
