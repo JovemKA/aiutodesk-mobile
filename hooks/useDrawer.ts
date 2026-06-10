@@ -1,11 +1,8 @@
-import { useContext } from 'react';
+import { useDrawerStore } from '@/features/navigation/drawerStore';
 
-import { DrawerContext } from '@/features/navigation/DrawerProvider';
-
-export const useDrawer = () => {
-  const context = useContext(DrawerContext);
-  if (!context) {
-    throw new Error('useDrawer must be used within DrawerProvider');
-  }
-  return context;
-};
+/** Stable-shape selector over the Zustand drawer store. */
+export const useDrawer = () => ({
+  isOpen: useDrawerStore((s) => s.isOpen),
+  open: useDrawerStore((s) => s.open),
+  close: useDrawerStore((s) => s.close),
+});

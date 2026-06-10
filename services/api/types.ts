@@ -182,3 +182,12 @@ export type ReplyTicketPayload = {
   body: string;
   internalNote?: boolean;
 };
+
+export type ArticleInput = {
+  title: string;
+  content: string;
+  summary?: string;
+  tags?: string[];
+  categoryId?: string;
+  isPublished?: boolean;
+};

@@ -10,10 +10,9 @@ import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 
-import { AuthProvider } from '@/features/auth/AuthProvider';
+import { useAuthStore } from '@/features/auth/authStore';
 import { useAuth } from '@/features/auth/useAuth';
 import { useProtectedRoute } from '@/features/auth/useProtectedRoute';
-import { ThemeProvider } from '@/features/theme/ThemeProvider';
 import { useThemeMode } from '@/hooks/useThemeMode';
 import { queryClient } from '@/services/queryClient';
 
@@ -23,6 +22,11 @@ function RootLayoutInner() {
   const { colorMode, theme } = useThemeMode();
   const { status } = useAuth();
   useProtectedRoute();
+
+  // Restore the persisted session once on launch.
+  useEffect(() => {
+    void useAuthStore.getState().hydrate();
+  }, []);
 
   if (status === 'loading') {
     return (
@@ -69,11 +73,7 @@ export default function RootLayout() {
   return (
     <GluestackUIProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <AuthProvider>
-            <RootLayoutInner />
-          </AuthProvider>
-        </ThemeProvider>
+        <RootLayoutInner />
       </QueryClientProvider>
     </GluestackUIProvider>
   );

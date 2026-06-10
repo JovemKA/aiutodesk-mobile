@@ -102,3 +102,18 @@ export function useTicketAssist(id: string) {
     mutationFn: (query?: string) => ticketsApi.assistTicket(id, 'suggest_reply', query),
   });
 }
+
+export function useUpdateTicket(id: string) {
+  return useTicketWrite<Partial<CreateTicketPayload>>(
+    (tid, payload) => ticketsApi.updateTicket(tid, payload),
+    id,
+  );
+}
+
+export function useDeleteTicket() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => ticketsApi.deleteTicket(id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ticketKeys.all }),
+  });
+}

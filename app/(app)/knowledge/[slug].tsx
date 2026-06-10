@@ -3,9 +3,11 @@ import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ScreenLayout } from '@/components/ScreenLayout';
+import { ConfirmSheet } from '@/components/ui/ConfirmSheet';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Markdown } from '@/components/ui/Markdown';
-import { useArticle, useVoteArticle } from '@/hooks/queries/useArticles';
+import { useAuth } from '@/features/auth/useAuth';
+import { useArticle, useArticleActions, useVoteArticle } from '@/hooks/queries/useArticles';
 import { useThemeMode } from '@/hooks/useThemeMode';
 import { getApiErrorMessage } from '@/services/api/client';
 import { Theme } from '@/theme';
@@ -15,9 +17,14 @@ export default function ArticleScreen() {
   const { theme } = useThemeMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const router = useRouter();
+  const { user } = useAuth();
   const { data: article, isLoading, isError, error } = useArticle(slug);
   const vote = useVoteArticle(slug);
+  const { remove } = useArticleActions();
   const [voted, setVoted] = useState<boolean | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const canManage = user?.role === 'dev' || user?.role === 'master' || user?.role === 'admin';
 
   const handleVote = (helpful: boolean) => {
     if (voted !== null) return;
@@ -42,6 +49,22 @@ export default function ArticleScreen() {
         <>
           <Text style={styles.title}>{article.title}</Text>
           {article.summary ? <Text style={styles.summary}>{article.summary}</Text> : null}
+
+          {canManage ? (
+            <View style={styles.manageRow}>
+              <Pressable
+                style={styles.manageButton}
+                onPress={() => router.push(`/(app)/knowledge/edit/${article.slug}` as never)}>
+                <IconSymbol name="pencil" color={theme.colors.primary} size={16} />
+                <Text style={styles.manageText}>Editar</Text>
+              </Pressable>
+              <Pressable style={styles.manageButton} onPress={() => setConfirmDelete(true)}>
+                <IconSymbol name="trash" color={theme.colors.danger} size={16} />
+                <Text style={[styles.manageText, { color: theme.colors.danger }]}>Excluir</Text>
+              </Pressable>
+            </View>
+          ) : null}
+
           <View style={styles.divider} />
           <Markdown>{article.content}</Markdown>
 
@@ -64,6 +87,23 @@ export default function ArticleScreen() {
           </View>
         </>
       )}
+
+      <ConfirmSheet
+        visible={confirmDelete}
+        title="Excluir artigo"
+        message={article ? `Excluir "${article.title}"? Esta ação não pode ser desfeita.` : ''}
+        confirmLabel="Excluir"
+        destructive
+        loading={remove.isPending}
+        onConfirm={async () => {
+          if (article) {
+            await remove.mutateAsync(article.id);
+            setConfirmDelete(false);
+            router.back();
+          }
+        }}
+        onClose={() => setConfirmDelete(false)}
+      />
     </ScreenLayout>
   );
 }
@@ -87,6 +127,21 @@ const createStyles = (theme: Theme) =>
       fontFamily: theme.typography.fontFamily.body,
       fontSize: theme.typography.fontSize.md,
       color: theme.colors.mutedText,
+    },
+    manageRow: { flexDirection: 'row', gap: theme.spacing.md, marginTop: theme.spacing.xs },
+    manageButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.xs,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: 999,
+      backgroundColor: theme.colors.primarySoft,
+    },
+    manageText: {
+      fontFamily: theme.typography.fontFamily.subtitle,
+      fontSize: theme.typography.fontSize.sm,
+      color: theme.colors.primary,
     },
     divider: {
       height: 1,

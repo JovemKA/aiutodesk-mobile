@@ -1,11 +1,13 @@
-import { useContext } from 'react';
+import { useMemo } from 'react';
 
-import { ThemeContext } from '@/features/theme/ThemeProvider';
+import { useThemeStore } from '@/features/theme/themeStore';
+import { getTheme } from '@/theme';
 
+/** Stable-shape selector over the Zustand theme store (computes the theme). */
 export const useThemeMode = () => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useThemeMode must be used within ThemeProvider');
-  }
-  return context;
+  const colorMode = useThemeStore((s) => s.colorMode);
+  const setColorMode = useThemeStore((s) => s.setColorMode);
+  const toggleColorMode = useThemeStore((s) => s.toggleColorMode);
+  const theme = useMemo(() => getTheme(colorMode), [colorMode]);
+  return { colorMode, theme, setColorMode, toggleColorMode };
 };

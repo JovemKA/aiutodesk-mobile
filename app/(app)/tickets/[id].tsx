@@ -17,6 +17,7 @@ import { TicketMessage } from '@/components/tickets/TicketMessage';
 import { TimelineEvent } from '@/components/tickets/TimelineEvent';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
+import { ConfirmSheet } from '@/components/ui/ConfirmSheet';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { OptionSheet, type SheetOption } from '@/components/ui/OptionSheet';
 import { useAuth } from '@/features/auth/useAuth';
@@ -34,6 +35,7 @@ import {
   useAssignTicket,
   useChangePriority,
   useChangeStatus,
+  useDeleteTicket,
   useReplyTicket,
   useTicket,
   useTicketAssist,
@@ -69,7 +71,9 @@ export default function TicketDetailScreen() {
   const assign = useAssignTicket(id);
   const reply = useReplyTicket(id);
   const assist = useTicketAssist(id);
+  const deleteTicket = useDeleteTicket();
 
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [draft, setDraft] = useState('');
   const [internal, setInternal] = useState(false);
   const [threadFilter, setThreadFilter] = useState<ThreadFilter>('all');
@@ -181,6 +185,20 @@ export default function TicketDetailScreen() {
             <ActionButton icon="slider.horizontal" label="Status" onPress={() => setSheet('status')} />
             <ActionButton icon="person.badge" label="Atribuir" onPress={() => setSheet('assign')} />
             <ActionButton icon="flag.fill" label="Prioridade" onPress={() => setSheet('priority')} />
+          </View>
+
+          {/* Edit / Delete */}
+          <View style={styles.manageRow}>
+            <Pressable
+              style={styles.manageBtn}
+              onPress={() => router.push(`/(app)/tickets/edit/${ticket.id}` as never)}>
+              <IconSymbol name="pencil" color={theme.colors.primary} size={16} />
+              <Text style={styles.manageText}>Editar</Text>
+            </Pressable>
+            <Pressable style={styles.manageBtn} onPress={() => setConfirmDelete(true)}>
+              <IconSymbol name="trash" color={theme.colors.danger} size={16} />
+              <Text style={[styles.manageText, { color: theme.colors.danger }]}>Excluir</Text>
+            </Pressable>
           </View>
 
           {/* Timeline (collapsible) */}
@@ -322,6 +340,21 @@ export default function TicketDetailScreen() {
         }}
         onClose={() => setSheet(null)}
       />
+
+      <ConfirmSheet
+        visible={confirmDelete}
+        title="Excluir chamado"
+        message={`Excluir "${ticket.title}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        destructive
+        loading={deleteTicket.isPending}
+        onConfirm={async () => {
+          await deleteTicket.mutateAsync(ticket.id);
+          setConfirmDelete(false);
+          router.back();
+        }}
+        onClose={() => setConfirmDelete(false)}
+      />
     </ScreenLayout>
   );
 }
@@ -403,6 +436,21 @@ const createStyles = (theme: Theme) =>
       fontSize: theme.typography.fontSize.md,
       lineHeight: theme.typography.lineHeight.md,
       color: theme.colors.text,
+    },
+    manageRow: { flexDirection: 'row', gap: theme.spacing.md, marginTop: theme.spacing.xs },
+    manageBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.xs,
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.xs,
+      borderRadius: 999,
+      backgroundColor: theme.colors.primarySoft,
+    },
+    manageText: {
+      fontFamily: theme.typography.fontFamily.subtitle,
+      fontSize: theme.typography.fontSize.sm,
+      color: theme.colors.primary,
     },
     actions: { flexDirection: 'row', gap: theme.spacing.sm, marginTop: theme.spacing.xs },
     action: {

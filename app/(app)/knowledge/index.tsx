@@ -1,9 +1,10 @@
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, LayoutAnimation, Platform, Pressable, StyleSheet, Text, UIManager, View } from 'react-native';
 
 import { ScreenLayout } from '@/components/ScreenLayout';
 import { ListItem } from '@/components/ListItem';
+import { AppButton } from '@/components/ui/AppButton';
 import { TextField } from '@/components/ui/TextField';
 import { useArticles } from '@/hooks/queries/useArticles';
 import { useThemeMode } from '@/hooks/useThemeMode';
@@ -13,6 +14,7 @@ import { Theme } from '@/theme';
 export default function KnowledgeScreen() {
   const { theme } = useThemeMode();
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const router = useRouter();
   const { data, isLoading, isError, error, refetch, isRefetching } = useArticles();
   const [query, setQuery] = useState('');
 
@@ -45,6 +47,8 @@ export default function KnowledgeScreen() {
         placeholder="Buscar por título, resumo ou tag"
         autoCapitalize="none"
       />
+
+      <AppButton label="Novo artigo" variant="secondary" onPress={() => router.push('/(app)/knowledge/new' as never)} />
 
       {isLoading ? (
         <ActivityIndicator color={theme.colors.primary} style={styles.spinner} />

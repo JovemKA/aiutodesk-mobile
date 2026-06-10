@@ -1,9 +1,8 @@
 import { useRouter, usePathname } from 'expo-router';
-import React, { createContext, useCallback, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   interpolate,
-  runOnJS,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -13,18 +12,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Avatar } from '@/components/ui/Avatar';
 import { Logo } from '@/components/ui/Logo';
 import { IconSymbol, type IconSymbolName } from '@/components/ui/icon-symbol';
-import { useAuth } from '@/features/auth/useAuth';
+import { useAuthStore } from '@/features/auth/authStore';
+import { useDrawerStore } from '@/features/navigation/drawerStore';
 import { useThemeMode } from '@/hooks/useThemeMode';
 import type { UserRole } from '@/services/api/types';
 import { Theme } from '@/theme';
-
-type DrawerContextValue = {
-  isOpen: boolean;
-  open: () => void;
-  close: () => void;
-};
-
-export const DrawerContext = createContext<DrawerContextValue | undefined>(undefined);
 
 const PANEL_WIDTH = Math.min(300, Dimensions.get('window').width * 0.82);
 
@@ -56,6 +48,12 @@ const AGENT_ITEM: NavItem = {
   match: '/tickets',
 };
 
+// Gestão de entidades — apenas master/admin (espelha o RBAC do front).
+const ADMIN_ITEMS: NavItem[] = [
+  { label: 'Categorias', href: '/(app)/admin/categories', icon: 'folder.fill', match: '/admin/categories' },
+  { label: 'Departamentos', href: '/(app)/admin/departments', icon: 'briefcase.fill', match: '/admin/departments' },
+];
+
 const PROFILE_ITEM: NavItem = {
   label: 'Perfil',
   href: '/(app)/profile',
@@ -63,24 +61,27 @@ const PROFILE_ITEM: NavItem = {
   match: '/profile',
 };
 
-export function DrawerProvider({ children }: { children: React.ReactNode }) {
-  const [isOpen, setIsOpen] = useState(false);
+const ABOUT_ITEM: NavItem = {
+  label: 'Sobre',
+  href: '/(app)/about',
+  icon: 'info.circle',
+  match: '/about',
+};
+
+/**
+ * Renders the app content plus the animated side drawer. Open/close state
+ * lives in the Zustand `useDrawerStore`; this host animates a reanimated
+ * progress value off of `isOpen`. The panel stays mounted (translated
+ * off-screen) so the close animation plays smoothly.
+ */
+export function DrawerHost({ children }: { children: React.ReactNode }) {
+  const isOpen = useDrawerStore((s) => s.isOpen);
+  const close = useDrawerStore((s) => s.close);
   const progress = useSharedValue(0);
 
-  const open = useCallback(() => {
-    setIsOpen(true);
-    progress.value = withTiming(1, { duration: 220 });
-  }, [progress]);
-
-  const close = useCallback(() => {
-    progress.value = withTiming(0, { duration: 200 }, (finished) => {
-      if (finished) {
-        runOnJS(setIsOpen)(false);
-      }
-    });
-  }, [progress]);
-
-  const value = useMemo(() => ({ isOpen, open, close }), [isOpen, open, close]);
+  useEffect(() => {
+    progress.value = withTiming(isOpen ? 1 : 0, { duration: isOpen ? 220 : 200 });
+  }, [isOpen, progress]);
 
   const backdropStyle = useAnimatedStyle(() => ({
     opacity: progress.value * 0.5,
@@ -91,34 +92,40 @@ export function DrawerProvider({ children }: { children: React.ReactNode }) {
   }));
 
   return (
-    <DrawerContext.Provider value={value}>
-      <View style={styles.root}>
-        {children}
-        <View style={StyleSheet.absoluteFill} pointerEvents={isOpen ? 'auto' : 'none'}>
-          <Animated.View style={[styles.backdrop, backdropStyle]}>
-            <Pressable style={StyleSheet.absoluteFill} onPress={close} accessibilityLabel="Fechar menu" />
-          </Animated.View>
-          <Animated.View style={[styles.panel, panelStyle]}>
-            <DrawerContent close={close} />
-          </Animated.View>
-        </View>
+    <View style={styles.root}>
+      {children}
+      <View style={StyleSheet.absoluteFill} pointerEvents={isOpen ? 'auto' : 'none'}>
+        <Animated.View style={[styles.backdrop, backdropStyle]}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={close} accessibilityLabel="Fechar menu" />
+        </Animated.View>
+        <Animated.View style={[styles.panel, panelStyle]}>
+          <DrawerContent close={close} />
+        </Animated.View>
       </View>
-    </DrawerContext.Provider>
+    </View>
   );
 }
 
 function DrawerContent({ close }: { close: () => void }) {
   const { theme } = useThemeMode();
-  const { user, logout } = useAuth();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const isAgent = user?.role === 'dev' || user?.role === 'master' || user?.role === 'admin';
+  const isAdmin = user?.role === 'master' || user?.role === 'admin';
   const items = useMemo(
-    () => [...BASE_ITEMS, ...(isAgent ? [AGENT_ITEM] : []), PROFILE_ITEM],
-    [isAgent],
+    () => [
+      ...BASE_ITEMS,
+      ...(isAgent ? [AGENT_ITEM] : []),
+      ...(isAdmin ? ADMIN_ITEMS : []),
+      PROFILE_ITEM,
+      ABOUT_ITEM,
+    ],
+    [isAgent, isAdmin],
   );
 
   const isActive = (item: NavItem) =>

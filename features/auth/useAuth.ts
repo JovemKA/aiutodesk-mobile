@@ -1,11 +1,10 @@
-import { useContext } from 'react';
+import { useAuthStore } from '@/features/auth/authStore';
 
-import { AuthContext } from '@/features/auth/AuthProvider';
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
-  return context;
-};
+/** Stable-shape selector over the Zustand auth store. */
+export const useAuth = () => ({
+  status: useAuthStore((s) => s.status),
+  user: useAuthStore((s) => s.user),
+  login: useAuthStore((s) => s.login),
+  signup: useAuthStore((s) => s.signup),
+  logout: useAuthStore((s) => s.logout),
+});

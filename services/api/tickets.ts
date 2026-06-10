@@ -27,6 +27,18 @@ export async function createTicket(payload: CreateTicketPayload): Promise<Ticket
   return data;
 }
 
+export async function updateTicket(
+  id: string,
+  payload: Partial<CreateTicketPayload>,
+): Promise<Ticket> {
+  const { data } = await api.patch<Ticket>(`/tickets/${id}`, payload);
+  return data;
+}
+
+export async function deleteTicket(id: string): Promise<void> {
+  await api.delete(`/tickets/${id}`);
+}
+
 export async function getAssignableUsers(id: string): Promise<AssignableUser[]> {
   const { data } = await api.get<AssignableUser[]>(`/tickets/${id}/assignable-users`);
   return data;
